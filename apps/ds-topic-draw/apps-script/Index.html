@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<meta name="admin-key" content="<?= adminKey ?>">
+<title>자료구조 주제 뽑기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=IBM+Plex+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: 왼쪽은 뽑기 무대(룰렛/카드), 오른쪽은 실시간 배정 대시보드. 좁은 화면에서는 한 줄로 쌓인다. */
+:root {
+  --bg: #eef2f4;
+  --panel: #ffffff;
+  --ink: #15232b;
+  --muted: #5b6b74;
+  --line: #d5dde1;
+  --accent: #0e7c74;
+  --accent-ink: #ffffff;
+  --mark: #e59a2f;
+  --soft: #e3ecee;
+  --taken: #f6efe2;
+  --danger: #b4412f;
+  --c-linear: #2f7d9c;
+  --c-tree: #3f8f4f;
+  --c-hash: #c0702a;
+  --c-graph: #8a4f9e;
+  --c-adv: #b8424f;
+  --f-display: "Do Hyeon", "IBM Plex Sans KR", system-ui, sans-serif;
+  --f-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #11181c; --panel: #1a2328; --ink: #e6eef1; --muted: #9aabb3; --line: #2c3a41;
+    --accent: #3cb8ab; --accent-ink: #0b1a18; --mark: #f0b052; --soft: #223036; --taken: #2c2a22; --danger: #e07a66;
+    --c-linear: #5fb0d0; --c-tree: #6cc07c; --c-hash: #e2975a; --c-graph: #b886c9; --c-adv: #e07884;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #11181c; --panel: #1a2328; --ink: #e6eef1; --muted: #9aabb3; --line: #2c3a41;
+  --accent: #3cb8ab; --accent-ink: #0b1a18; --mark: #f0b052; --soft: #223036; --taken: #2c2a22; --danger: #e07a66;
+  --c-linear: #5fb0d0; --c-tree: #6cc07c; --c-hash: #e2975a; --c-graph: #b886c9; --c-adv: #e07884;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.55; }
+.wrap { max-width: 1240px; margin: 0 auto; padding-inline: 16px; padding-block: 24px 48px; display: grid; gap: 20px; }
+header.top { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px; }
+h1 { font-family: var(--f-display); font-weight: 400; font-size: clamp(30px, 5vw, 44px); line-height: 1.05; margin: 0; text-wrap: balance; }
+h1 .ptr { color: var(--accent); font-family: var(--f-mono); font-size: .55em; vertical-align: middle; margin-right: 8px; }
+.sub { color: var(--muted); margin: 6px 0 0; }
+.meter { display: grid; gap: 6px; min-width: 220px; flex: 0 1 320px; }
+.meter-row { display: flex; justify-content: space-between; font-family: var(--f-mono); font-size: 13px; font-variant-numeric: tabular-nums; color: var(--muted); }
+.meter-row b { color: var(--ink); font-size: 22px; font-weight: 600; }
+.bar { height: 10px; border-radius: 5px; background: var(--soft); overflow: hidden; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .6s ease; }
+
+.grid { display: grid; grid-template-columns: minmax(0, 440px) minmax(0, 1fr); gap: 20px; align-items: start; }
+@media (max-width: 900px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 20px; display: grid; gap: 16px; min-width: 0; }
+.panel h2 { font-family: var(--f-display); font-weight: 400; font-size: 24px; margin: 0; }
+.eyebrow { font-family: var(--f-mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+
+.fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+label { display: grid; gap: 4px; font-size: 13px; color: var(--muted); }
+input, select { font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 9px 11px; width: 100%; min-width: 0; }
+input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.modes { display: flex; gap: 6px; background: var(--soft); padding: 4px; border-radius: 10px; }
+.modes button { flex: 1; border: 0; background: transparent; color: var(--muted); font: inherit; font-weight: 500; padding: 8px; border-radius: 7px; cursor: pointer; }
+.modes button[aria-pressed="true"] { background: var(--panel); color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,.12); }
+
+.stage { position: relative; display: grid; place-items: center; min-height: 340px; }
+.wheel-box { position: relative; width: min(100%, 360px); aspect-ratio: 1; max-width: 100%; }
+.wheel-box canvas { width: 100%; height: 100%; display: block; }
+.pointer { position: absolute; left: 50%; top: -6px; transform: translateX(-50%); width: 0; height: 0; border-left: 14px solid transparent; border-right: 14px solid transparent; border-top: 26px solid var(--mark); filter: drop-shadow(0 2px 2px rgba(0,0,0,.25)); z-index: 2; }
+.hub { position: absolute; inset: 0; margin: auto; width: 26%; aspect-ratio: 1; border-radius: 50%; background: var(--panel); border: 3px solid var(--ink); display: grid; place-items: center; font-family: var(--f-mono); font-size: 12px; color: var(--muted); text-align: center; line-height: 1.2; }
+.hub b { display: block; font-size: 22px; color: var(--ink); font-variant-numeric: tabular-nums; }
+
+.cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; width: 100%; perspective: 900px; }
+.card { aspect-ratio: 3 / 4; position: relative; border: 0; padding: 0; background: none; cursor: pointer; transform-style: preserve-3d; transition: transform .7s cubic-bezier(.2,.8,.2,1); font: inherit; color: inherit; }
+.card:disabled { cursor: default; }
+.card.flip { transform: rotateY(180deg); }
+.card .face { position: absolute; inset: 0; border-radius: 12px; backface-visibility: hidden; display: grid; place-items: center; padding: 10px; text-align: center; }
+.card .back { background: var(--ink); color: var(--bg); background-image: repeating-linear-gradient(45deg, transparent 0 10px, rgba(127,127,127,.18) 10px 11px); font-family: var(--f-mono); font-size: 13px; }
+.card .back b { font-family: var(--f-display); font-weight: 400; font-size: 44px; display: block; color: var(--mark); }
+.card .front { background: var(--panel); border: 2px solid var(--accent); transform: rotateY(180deg); font-family: var(--f-display); font-size: 20px; line-height: 1.15; }
+.card.dim { opacity: .35; }
+
+.go { font: inherit; font-family: var(--f-display); font-size: 22px; background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 10px; padding: 12px; cursor: pointer; transition: transform .1s; }
+.go:hover:not(:disabled) { transform: translateY(-1px); }
+.go:disabled { opacity: .5; cursor: not-allowed; }
+.msg { min-height: 1.5em; font-size: 14px; color: var(--muted); margin: 0; }
+.msg.err { color: var(--danger); }
+
+.result { border: 2px dashed var(--mark); border-radius: 12px; padding: 16px; display: grid; gap: 6px; }
+.result .t { font-family: var(--f-display); font-size: 30px; line-height: 1.1; }
+.result .en { font-family: var(--f-mono); font-size: 12px; color: var(--muted); }
+.result p { margin: 0; }
+.big-o { font-family: var(--f-mono); font-size: 12px; background: var(--soft); border-radius: 6px; padding: 2px 7px; justify-self: start; }
+
+.cats { display: grid; gap: 18px; }
+.cat-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.cat-head h3 { margin: 0; font-size: 16px; font-weight: 700; }
+.dot { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+.cat-count { font-family: var(--f-mono); font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; margin-left: auto; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 8px; margin-top: 8px; }
+.tile { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; display: grid; gap: 4px; min-width: 0; position: relative; background: var(--panel); }
+.tile .name { font-weight: 700; font-size: 14px; line-height: 1.3; }
+.tile .who { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.tile.taken { background: var(--taken); border-color: transparent; }
+.tile.taken .who { color: var(--ink); }
+.pill { font-family: var(--f-mono); font-size: 11px; border-radius: 999px; padding: 1px 8px; border: 1px solid var(--line); color: var(--muted); }
+.tile.taken .pill { background: var(--ink); color: var(--panel); border-color: var(--ink); }
+.tile.fresh { animation: pop 1.6s ease; }
+@keyframes pop { 0% { box-shadow: 0 0 0 0 var(--mark); } 30% { box-shadow: 0 0 0 5px var(--mark); } 100% { box-shadow: 0 0 0 0 transparent; } }
+.lvl { font-family: var(--f-mono); font-size: 11px; color: var(--muted); }
+.rel { font: inherit; font-size: 12px; color: var(--danger); background: none; border: 1px solid currentColor; border-radius: 6px; padding: 1px 7px; cursor: pointer; margin-left: auto; }
+
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th { font-size: 12px; color: var(--muted); font-weight: 500; }
+td.num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; color: var(--muted); }
+.empty { color: var(--muted); padding: 18px; border: 1px dashed var(--line); border-radius: 10px; text-align: center; }
+
+.admin { border-top: 1px solid var(--line); padding-top: 14px; display: grid; gap: 10px; }
+.admin form { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; align-items: end; }
+.admin button { font: inherit; background: var(--ink); color: var(--panel); border: 0; border-radius: 8px; padding: 9px 12px; cursor: pointer; }
+
+.toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%) translateY(20px); background: var(--ink); color: var(--panel); padding: 10px 16px; border-radius: 10px; font-size: 14px; opacity: 0; transition: opacity .3s, transform .3s; pointer-events: none; max-width: calc(100% - 32px); z-index: 10; }
+.toast.on { opacity: 1; transform: translateX(-50%) translateY(0); }
+#confetti { position: fixed; inset: 0; pointer-events: none; z-index: 9; width: 100%; height: 100%; }
+
+@media (max-width: 480px) { .fields { grid-template-columns: 1fr; } .card .back b { font-size: 34px; } .card .front { font-size: 16px; } }
+@media (prefers-reduced-motion: reduce) { .card, .bar > i { transition: none; } .tile.fresh { animation: none; } }
+</style>
+</head>
+<body>
+
+<canvas id="confetti" aria-hidden="true"></canvas>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1><span class="ptr">head →</span>자료구조 과제 주제 뽑기</h1>
+      <p class="sub">이름을 적고 룰렛을 돌리거나 카드를 한 장 고르세요. 한 사람당 한 번, 한 주제는 한 명만 가져갈 수 있어요.</p>
+    </div>
+    <div class="meter" aria-live="polite">
+      <div class="meter-row"><span>배정 완료</span><span><b id="mDone">0</b> / <span id="mTotal">0</span></span></div>
+      <div class="bar"><i id="mBar"></i></div>
+      <div class="meter-row"><span>남은 주제</span><span id="mLeft">0개</span></div>
+    </div>
+  </header>
+
+  <div class="grid">
+    <section class="panel" aria-labelledby="drawTitle">
+      <div>
+        <div class="eyebrow">Step 1 · 내 정보</div>
+        <h2 id="drawTitle">복불복 뽑기</h2>
+      </div>
+      <div class="fields">
+        <label for="studentNo">학번<input id="studentNo" inputmode="numeric" autocomplete="off" placeholder="예: 20251234"></label>
+        <label for="studentName">이름<input id="studentName" autocomplete="off" placeholder="예: 김자료"></label>
+      </div>
+      <div>
+        <div class="eyebrow" style="margin-bottom:6px">Step 2 · 뽑는 방식</div>
+        <div class="modes" role="group" aria-label="뽑는 방식">
+          <button id="modeWheel" type="button" aria-pressed="true">룰렛 돌리기</button>
+          <button id="modeCards" type="button" aria-pressed="false">카드 뒤집기</button>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="wheel-box" id="wheelBox">
+          <div class="pointer" aria-hidden="true"></div>
+          <canvas id="wheel" width="720" height="720" aria-label="남은 주제 룰렛"></canvas>
+          <div class="hub"><div><b id="hubN">0</b>남은 주제</div></div>
+        </div>
+        <div class="cards" id="cards" hidden>
+          <button class="card" type="button" data-i="0"><span class="face back"><span><b>?</b>CARD 0</span></span><span class="face front"></span></button>
+          <button class="card" type="button" data-i="1"><span class="face back"><span><b>?</b>CARD 1</span></span><span class="face front"></span></button>
+          <button class="card" type="button" data-i="2"><span class="face back"><span><b>?</b>CARD 2</span></span><span class="face front"></span></button>
+        </div>
+      </div>
+      <button class="go" id="go" type="button">룰렛 돌리기!</button>
+      <p class="msg" id="msg" role="status"></p>
+      <div class="result" id="result" hidden>
+        <div class="eyebrow">내 과제 주제</div>
+        <div class="t" id="rTitle"></div>
+        <div class="en" id="rEn"></div>
+        <span class="big-o" id="rBigO"></span>
+        <p id="rDesc"></p>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="dashTitle">
+      <div>
+        <div class="eyebrow">몇 초마다 새로 고침 · 모두에게 똑같이 보여요</div>
+        <h2 id="dashTitle">배정 현황 대시보드</h2>
+      </div>
+      <div class="cats" id="cats"><div class="empty">주제 목록을 불러오는 중이에요...</div></div>
+      <div>
+        <div class="eyebrow" style="margin-bottom:6px">뽑은 순서</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>#</th><th>학번</th><th>이름</th><th>주제</th><th>분류</th><th>시각</th></tr></thead>
+            <tbody id="roster"><tr><td colspan="6" class="empty">아직 아무도 뽑지 않았어요. 첫 번째 주인공이 되어 보세요.</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="admin" id="admin" hidden>
+        <div class="eyebrow">교수자 화면</div>
+        <p class="msg" style="margin:0">배정된 타일의 해제 버튼을 누르면 그 주제가 다시 뽑기 대상으로 돌아가요. 주제 추가나 수정은 구글 시트의 topics 탭에서 바로 하면 돼요.</p>
+      </div>
+    </section>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+  const CATS = {
+    linear: { name: "선형 구조", v: "--c-linear" },
+    tree:   { name: "트리",      v: "--c-tree" },
+    hash:   { name: "해시",      v: "--c-hash" },
+    graph:  { name: "그래프",    v: "--c-graph" },
+    adv:    { name: "고급·응용", v: "--c-adv" },
+  };
+  const POLL_MS = 4000;
+  const $ = (id) => document.getElementById(id);
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  const adminKey = document.querySelector('meta[name="admin-key"]').content || "";
+  const canEdit = !!adminKey;
+
+  // google.script.run 을 Promise 로
+  const run = (fn, ...args) => new Promise((res, rej) =>
+    google.script.run.withSuccessHandler(res).withFailureHandler(rej)[fn](...args));
+
+  let topics = [];
+  let loaded = false;
+  let mode = "wheel";
+  let busy = false;
+  let wheelList = [];
+  let rot = 0;
+  let myClaimId = null;
+  const seen = new Map();
+
+  try {
+    $("studentName").value = localStorage.getItem("ds.name") || "";
+    $("studentNo").value = localStorage.getItem("ds.no") || "";
+  } catch (e) {}
+
+  const available = () => topics.filter(t => !t.claimedBy);
+  const fmtTime = (ms) => { const d = new Date(ms); return `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`; };
+  function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  function setMsg(t, err) { $("msg").textContent = t || ""; $("msg").classList.toggle("err", !!err); }
+  let toastTimer;
+  function toast(t) { const n = $("toast"); n.textContent = t; n.classList.add("on"); clearTimeout(toastTimer); toastTimer = setTimeout(() => n.classList.remove("on"), 3200); }
+
+  /* ---------- 상태 반영 ---------- */
+  function applyTopics(list) {
+    const first = !loaded;
+    loaded = true;
+    topics = (list || []).map(t => ({ ...t }));
+    for (const t of topics) {
+      const prev = seen.get(t.id);
+      if (!first && t.claimedBy && prev !== t.claimedBy) {
+        t._fresh = true;
+        if (t.id !== myClaimId) toast(`방금 ${t.claimedBy} 님이 '${t.title}'을(를) 뽑았어요!`);
+      }
+      seen.set(t.id, t.claimedBy || null);
+    }
+    render();
+  }
+
+  async function refresh() {
+    try { applyTopics((await run("getState")).topics); }
+    catch (e) { if (!loaded) setMsg("현황을 불러오지 못했어요. 새로 고침해 주세요.", true); }
+  }
+
+  /* ---------- 대시보드 ---------- */
+  function render() {
+    const total = topics.length, done = topics.filter(t => t.claimedBy).length;
+    $("mDone").textContent = done; $("mTotal").textContent = total;
+    $("mLeft").textContent = (total - done) + "개";
+    $("mBar").style.width = total ? (done / total * 100) + "%" : "0";
+    $("hubN").textContent = total - done;
+
+    const cats = $("cats"); cats.replaceChildren();
+    if (!loaded) cats.appendChild(el("div", "empty", "주제 목록을 불러오는 중이에요..."));
+    else if (!total) cats.appendChild(el("div", "empty", "아직 주제가 없어요. 교수자가 구글 시트에 주제를 올리면 여기에 나타나요."));
+    const known = Object.keys(CATS);
+    const groups = Object.entries(CATS).concat([["etc", { name: "기타", v: "--muted" }]]);
+    for (const [k, c] of groups) {
+      const list = topics.filter(t => k === "etc" ? !known.includes(t.cat) : t.cat === k);
+      if (!list.length) continue;
+      const box = el("div");
+      const head = el("div", "cat-head");
+      const dot = el("span", "dot"); dot.style.background = `var(${c.v})`;
+      head.append(dot, el("h3", null, c.name), el("span", "cat-count", `${list.filter(t => t.claimedBy).length} / ${list.length}`));
+      const tiles = el("div", "tiles");
+      for (const t of list) {
+        const tile = el("div", "tile" + (t.claimedBy ? " taken" : "") + (t._fresh ? " fresh" : ""));
+        tile.append(el("div", "name", t.title));
+        const who = el("div", "who");
+        if (t.claimedBy) {
+          who.append(el("span", "pill", "배정"), el("span", null, t.claimedBy));
+          if (canEdit) {
+            const b = el("button", "rel", "해제"); b.type = "button";
+            b.addEventListener("click", () => release(t, b));
+            who.append(b);
+          }
+        } else {
+          who.append(el("span", "pill", "남음"), el("span", "lvl", t.level || ""));
+        }
+        tile.append(who);
+        tiles.append(tile);
+      }
+      box.append(head, tiles);
+      cats.append(box);
+    }
+    topics.forEach(t => delete t._fresh);
+
+    const rows = topics.filter(t => t.claimedBy).sort((a, b) => (a.claimedAt || 0) - (b.claimedAt || 0));
+    const tb = $("roster"); tb.replaceChildren();
+    if (!rows.length) {
+      const tr = el("tr"); const td = el("td", "empty", "아직 아무도 뽑지 않았어요. 첫 번째 주인공이 되어 보세요."); td.colSpan = 6; tr.append(td); tb.append(tr);
+    }
+    rows.forEach((t, i) => {
+      const tr = el("tr");
+      tr.append(el("td", "num", String(i + 1)), el("td", "num", t.studentNo || ""), el("td", null, t.claimedBy), el("td", null, t.title), el("td", null, CATS[t.cat]?.name || ""), el("td", "num", t.claimedAt ? fmtTime(t.claimedAt) : ""));
+      tb.append(tr);
+    });
+
+    if (!busy) { wheelList = available(); drawWheel(); dealCards(); }
+    updateGo();
+  }
+
+  function updateGo() {
+    const left = available().length;
+    $("go").disabled = busy || !left;
+    $("go").hidden = mode === "cards";
+    if (loaded && !left && topics.length && !busy) setMsg("모든 주제가 배정됐어요!");
+  }
+
+  /* ---------- 룰렛 ---------- */
+  const cv = $("wheel"), cx = cv.getContext("2d");
+  function drawWheel() {
+    const W = cv.width, R = W / 2 - 8, c = W / 2;
+    cx.clearRect(0, 0, W, W);
+    const list = wheelList, n = list.length;
+    if (!n) { cx.beginPath(); cx.arc(c, c, R, 0, Math.PI * 2); cx.fillStyle = css("--soft"); cx.fill(); return; }
+    const seg = Math.PI * 2 / n;
+    const ink = css("--ink"), panel = css("--panel");
+    for (let i = 0; i < n; i++) {
+      const a0 = -Math.PI / 2 + rot + i * seg;
+      cx.beginPath(); cx.moveTo(c, c); cx.arc(c, c, R, a0, a0 + seg); cx.closePath();
+      cx.fillStyle = css(CATS[list[i].cat]?.v || "--muted");
+      cx.globalAlpha = i % 2 ? 0.82 : 1; cx.fill(); cx.globalAlpha = 1;
+      cx.strokeStyle = panel; cx.lineWidth = 2; cx.stroke();
+      cx.save(); cx.translate(c, c); cx.rotate(a0 + seg / 2);
+      cx.fillStyle = "#ffffff";
+      const fs = Math.max(14, Math.min(26, seg * R * 0.55));
+      cx.font = `600 ${fs}px "IBM Plex Sans KR", sans-serif`;
+      cx.textAlign = "right"; cx.textBaseline = "middle";
+      let label = String(list[i].title); if (label.length > 11) label = label.slice(0, 10) + "…";
+      cx.fillText(label, R - 16, 0);
+      cx.restore();
+    }
+    cx.beginPath(); cx.arc(c, c, R, 0, Math.PI * 2); cx.lineWidth = 6; cx.strokeStyle = ink; cx.stroke();
+  }
+
+  function spinTo(index) {
+    const n = wheelList.length, seg = Math.PI * 2 / n;
+    const jitter = (Math.random() - 0.5) * seg * 0.6;
+    let target = -(index + 0.5) * seg + jitter;
+    const from = rot;
+    target = target - Math.ceil((target - from) / (Math.PI * 2)) * Math.PI * 2;
+    target += (reduce ? 1 : 6) * Math.PI * 2;
+    const dur = reduce ? 600 : 4200;
+    return new Promise(res => {
+      const t0 = performance.now();
+      const step = (now) => {
+        const p = Math.min(1, (now - t0) / dur);
+        rot = from + (target - from) * (1 - Math.pow(1 - p, 4));
+        drawWheel();
+        if (p < 1) requestAnimationFrame(step); else res();
+      };
+      requestAnimationFrame(step);
+    });
+  }
+
+  function idleSpin() {
+    let on = true, last = performance.now();
+    const step = (now) => { if (!on) return; rot += (now - last) * 0.012; last = now; drawWheel(); requestAnimationFrame(step); };
+    if (!reduce) requestAnimationFrame(step);
+    return () => { on = false; };
+  }
+
+  /* ---------- 카드 ---------- */
+  function dealCards() {
+    const left = available().length;
+    document.querySelectorAll(".card").forEach((b, i) => {
+      b.classList.remove("flip", "dim");
+      b.disabled = busy || !left || i >= Math.min(3, left);
+      b.querySelector(".front").textContent = "";
+    });
+  }
+
+  /* ---------- 뽑기 ---------- */
+  function who() {
+    const name = $("studentName").value.trim(), no = $("studentNo").value.trim();
+    if (!no || !name) { setMsg("학번과 이름을 먼저 적어 주세요.", true); return null; }
+    try { localStorage.setItem("ds.name", name); localStorage.setItem("ds.no", no); } catch (e) {}
+    const mine = topics.find(t => t.claimedBy && String(t.studentNo) === no);
+    if (mine) { alreadyMsg(mine); return null; }
+    return { name, no };
+  }
+  function alreadyMsg(t) {
+    setMsg(`${t.claimedBy} 님은 이미 '${t.title}'을(를) 뽑았어요. 한 사람당 한 번만 뽑을 수 있어요.`, true);
+    showResult(t);
+  }
+
+  // 서버가 뽑고, 화면은 그 결과에 맞춰 연출만 한다
+  async function serverClaim(me) {
+    try { return await run("claim", me.no, me.name); }
+    catch (e) { return { ok: false, reason: "error" }; }
+  }
+
+  function failMsg(r) {
+    if (r.reason === "already") alreadyMsg(r.topic);
+    else if (r.reason === "empty") setMsg("아쉽지만 남은 주제가 없어요.", true);
+    else if (r.reason === "busy") setMsg("지금 뽑는 사람이 많아요. 잠시 뒤 다시 눌러 주세요.", true);
+    else setMsg("뽑기에 실패했어요. 잠시 뒤 다시 눌러 주세요.", true);
+  }
+
+  async function drawWheelMode() {
+    if (busy) return;
+    const me = who(); if (!me) return;
+    wheelList = available(); if (!wheelList.length) return;
+    busy = true; updateGo(); setMsg("두구두구두구...");
+    $("result").hidden = true;
+    const stop = idleSpin();
+    const r = await serverClaim(me);
+    stop();
+    if (r.ok) {
+      myClaimId = r.topic.id;
+      let idx = wheelList.findIndex(t => t.id === r.topic.id);
+      if (idx < 0) { wheelList.push(r.topic); idx = wheelList.length - 1; }
+      await spinTo(idx);
+      celebrate(); showResult(r.topic);
+      setMsg(`${me.name} 님, 축하해요! 과제 주제가 정해졌어요.`);
+    } else failMsg(r);
+    busy = false;
+    if (r.topics) applyTopics(r.topics); else render();
+  }
+
+  async function drawCardMode(btn) {
+    if (busy) return;
+    const me = who(); if (!me) return;
+    const pool = available(); if (!pool.length) return;
+    busy = true; updateGo(); setMsg("카드를 뒤집는 중...");
+    $("result").hidden = true;
+    document.querySelectorAll(".card").forEach(b => b.disabled = true);
+    const r = await serverClaim(me);
+    if (r.ok) {
+      myClaimId = r.topic.id;
+      btn.querySelector(".front").textContent = r.topic.title;
+      const others = pool.filter(t => t.id !== r.topic.id).sort(() => Math.random() - 0.5);
+      let k = 0;
+      document.querySelectorAll(".card").forEach(b => { if (b !== btn && others[k]) b.querySelector(".front").textContent = others[k++].title; });
+      btn.classList.add("flip");
+      await new Promise(res => setTimeout(res, reduce ? 50 : 750));
+      celebrate(); showResult(r.topic);
+      setMsg(`${me.name} 님, 축하해요! 과제 주제가 정해졌어요.`);
+      await new Promise(res => setTimeout(res, reduce ? 50 : 500));
+      document.querySelectorAll(".card").forEach(b => { if (b !== btn && b.querySelector(".front").textContent) b.classList.add("flip", "dim"); });
+      await new Promise(res => setTimeout(res, 2600));
+    } else failMsg(r);
+    busy = false;
+    if (r.topics) applyTopics(r.topics); else render();
+  }
+
+  function showResult(t) {
+    $("rTitle").textContent = t.title;
+    $("rEn").textContent = [t.en, CATS[t.cat]?.name, t.level].filter(Boolean).join(" · ");
+    $("rBigO").textContent = t.bigO || ""; $("rBigO").hidden = !t.bigO;
+    $("rDesc").textContent = t.desc || "";
+    $("result").hidden = false;
+  }
+
+  async function release(t, btn) {
+    btn.disabled = true;
+    try {
+      const r = await run("release", adminKey, t.id);
+      toast(r.ok ? `'${t.title}' 배정을 해제했어요.` : "해제하지 못했어요. 교수자 주소로 열었는지 확인해 주세요.");
+      if (r.ok && myClaimId === t.id) myClaimId = null;
+    } catch (e) { toast("해제하지 못했어요. 잠시 뒤 다시 시도해 주세요."); }
+    refresh();
+  }
+
+  /* ---------- 축하 효과 ---------- */
+  function celebrate() {
+    if (reduce) return;
+    const c = $("confetti"), g = c.getContext("2d");
+    c.width = innerWidth; c.height = innerHeight;
+    const cols = Object.values(CATS).map(x => css(x.v)).concat(css("--mark"));
+    const ps = Array.from({ length: 140 }, () => ({ x: innerWidth / 2 + (Math.random() - .5) * 200, y: innerHeight * .35, vx: (Math.random() - .5) * 12, vy: -Math.random() * 12 - 4, r: Math.random() * 6 + 3, c: cols[Math.floor(Math.random() * cols.length)], a: Math.random() * 6 }));
+    const t0 = performance.now();
+    const step = (now) => {
+      g.clearRect(0, 0, c.width, c.height);
+      for (const p of ps) { p.vy += .35; p.x += p.vx; p.y += p.vy; p.a += .2; g.save(); g.translate(p.x, p.y); g.rotate(p.a); g.fillStyle = p.c; g.fillRect(-p.r / 2, -p.r / 2, p.r, p.r * 1.6); g.restore(); }
+      if (now - t0 < 2600) requestAnimationFrame(step); else g.clearRect(0, 0, c.width, c.height);
+    };
+    requestAnimationFrame(step);
+  }
+
+  /* ---------- 이벤트 ---------- */
+  function setMode(m) {
+    mode = m;
+    $("modeWheel").setAttribute("aria-pressed", m === "wheel");
+    $("modeCards").setAttribute("aria-pressed", m === "cards");
+    $("wheelBox").hidden = m !== "wheel";
+    $("cards").hidden = m !== "cards";
+    setMsg(m === "cards" ? "세 장 중 마음이 가는 카드 한 장을 눌러 보세요." : "");
+    updateGo();
+  }
+  $("modeWheel").addEventListener("click", () => !busy && setMode("wheel"));
+  $("modeCards").addEventListener("click", () => !busy && setMode("cards"));
+  $("go").addEventListener("click", drawWheelMode);
+  document.querySelectorAll(".card").forEach(b => b.addEventListener("click", () => drawCardMode(b)));
+  $("admin").hidden = !canEdit;
+
+  drawWheel(); dealCards(); render();
+  refresh();
+  setInterval(() => { if (!document.hidden && !busy) refresh(); }, POLL_MS);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) refresh(); });
+})();
+</script>
+</body>
+</html>
