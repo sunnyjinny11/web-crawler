@@ -1,0 +1,13 @@
+{
+ "title": "덱",
+ "en": "Deque",
+ "cat": "linear",
+ "level": "중급",
+ "bigO": "양끝 삽입 O(1)",
+ "desc": "양쪽 끝에서 넣고 빼는 구조. 슬라이딩 윈도 최댓값에 응용한다.",
+ "order": 8,
+ "claimedBy": null,
+ "studentNo": null,
+ "claimedAt": null,
+ "claimantId": null
+}

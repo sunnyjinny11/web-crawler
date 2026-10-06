@@ -1,0 +1,13 @@
+{
+ "title": "서로소 집합",
+ "en": "Disjoint Set (Union-Find)",
+ "cat": "adv",
+ "level": "중급",
+ "bigO": "거의 O(1)",
+ "desc": "경로 압축과 랭크 합치기로 집합을 관리하고 연결 요소를 찾는다.",
+ "order": 31,
+ "claimedBy": null,
+ "studentNo": null,
+ "claimedAt": null,
+ "claimantId": null
+}

@@ -1,0 +1,13 @@
+{
+ "title": "B-트리",
+ "en": "B-Tree",
+ "cat": "tree",
+ "level": "심화",
+ "bigO": "탐색 O(log n)",
+ "desc": "디스크 블록에 맞춘 다분기 트리. 노드 분할과 병합을 다룬다.",
+ "order": 14,
+ "claimedBy": null,
+ "studentNo": null,
+ "claimedAt": null,
+ "claimantId": null
+}

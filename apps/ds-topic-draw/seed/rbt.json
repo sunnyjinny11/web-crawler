@@ -1,0 +1,13 @@
+{
+ "title": "레드블랙 트리",
+ "en": "Red-Black Tree",
+ "cat": "tree",
+ "level": "심화",
+ "bigO": "탐색 O(log n)",
+ "desc": "색 규칙으로 균형을 유지하는 트리. 표준 라이브러리 맵과의 관계를 조사한다.",
+ "order": 13,
+ "claimedBy": null,
+ "studentNo": null,
+ "claimedAt": null,
+ "claimantId": null
+}

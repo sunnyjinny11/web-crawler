@@ -1,0 +1,13 @@
+{
+ "title": "그래프 표현",
+ "en": "Graph Representation",
+ "cat": "graph",
+ "level": "기초",
+ "bigO": "인접 확인 O(1) vs O(deg)",
+ "desc": "인접 행렬과 인접 리스트를 구현하고 메모리와 속도를 비교한다.",
+ "order": 26,
+ "claimedBy": null,
+ "studentNo": null,
+ "claimedAt": null,
+ "claimantId": null
+}

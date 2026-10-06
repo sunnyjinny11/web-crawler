@@ -1,0 +1,13 @@
+{
+ "title": "LRU 캐시",
+ "en": "LRU Cache",
+ "cat": "adv",
+ "level": "중급",
+ "bigO": "get/put O(1)",
+ "desc": "해시 테이블과 이중 연결 리스트를 결합해 캐시 교체 정책을 구현한다.",
+ "order": 33,
+ "claimedBy": null,
+ "studentNo": null,
+ "claimedAt": null,
+ "claimantId": null
+}

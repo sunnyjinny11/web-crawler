@@ -1,0 +1,13 @@
+{
+ "title": "AVL 트리",
+ "en": "AVL Tree",
+ "cat": "tree",
+ "level": "심화",
+ "bigO": "탐색 O(log n)",
+ "desc": "높이 균형을 회전으로 유지하는 트리. LL·LR·RL·RR 회전을 구현한다.",
+ "order": 12,
+ "claimedBy": null,
+ "studentNo": null,
+ "claimedAt": null,
+ "claimantId": null
+}

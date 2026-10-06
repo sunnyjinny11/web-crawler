@@ -1,0 +1,13 @@
+{
+ "title": "B+ 트리",
+ "en": "B+ Tree",
+ "cat": "tree",
+ "level": "심화",
+ "bigO": "범위 탐색 O(log n + k)",
+ "desc": "리프가 연결된 B 트리 변형. 데이터베이스 인덱스에서의 쓰임을 분석한다.",
+ "order": 15,
+ "claimedBy": null,
+ "studentNo": null,
+ "claimedAt": null,
+ "claimantId": null
+}

@@ -1,0 +1,13 @@
+{
+ "title": "우선순위 큐",
+ "en": "Priority Queue",
+ "cat": "tree",
+ "level": "중급",
+ "bigO": "추출 O(log n)",
+ "desc": "힙으로 만든 우선순위 큐로 작업 스케줄러를 시뮬레이션한다.",
+ "order": 17,
+ "claimedBy": null,
+ "studentNo": null,
+ "claimedAt": null,
+ "claimantId": null
+}

@@ -1,0 +1,13 @@
+{
+ "title": "블룸 필터",
+ "en": "Bloom Filter",
+ "cat": "hash",
+ "level": "심화",
+ "bigO": "질의 O(k)",
+ "desc": "거짓 양성을 허용하는 확률적 집합. 오탐률을 계산하고 측정한다.",
+ "order": 25,
+ "claimedBy": null,
+ "studentNo": null,
+ "claimedAt": null,
+ "claimantId": null
+}

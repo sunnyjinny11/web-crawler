@@ -1,0 +1,13 @@
+{
+ "title": "이중 연결 리스트",
+ "en": "Doubly Linked List",
+ "cat": "linear",
+ "level": "기초",
+ "bigO": "삭제 O(1)",
+ "desc": "앞뒤 포인터를 모두 가진 리스트. 양방향 순회와 노드 삭제를 비교한다.",
+ "order": 3,
+ "claimedBy": null,
+ "studentNo": null,
+ "claimedAt": null,
+ "claimantId": null
+}

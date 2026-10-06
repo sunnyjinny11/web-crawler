@@ -1,0 +1,13 @@
+{
+ "title": "스택",
+ "en": "Stack",
+ "cat": "linear",
+ "level": "기초",
+ "bigO": "push/pop O(1)",
+ "desc": "후입선출 구조. 괄호 검사와 후위 표기식 계산을 구현한다.",
+ "order": 5,
+ "claimedBy": null,
+ "studentNo": null,
+ "claimedAt": null,
+ "claimantId": null
+}

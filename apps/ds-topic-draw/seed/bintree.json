@@ -1,0 +1,13 @@
+{
+ "title": "이진 트리와 순회",
+ "en": "Binary Tree Traversal",
+ "cat": "tree",
+ "level": "기초",
+ "bigO": "순회 O(n)",
+ "desc": "전위·중위·후위·레벨 순회를 재귀와 반복으로 구현한다.",
+ "order": 10,
+ "claimedBy": null,
+ "studentNo": null,
+ "claimedAt": null,
+ "claimantId": null
+}

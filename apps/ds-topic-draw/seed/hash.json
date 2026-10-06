@@ -1,0 +1,13 @@
+{
+ "title": "해시 테이블",
+ "en": "Hash Table",
+ "cat": "hash",
+ "level": "중급",
+ "bigO": "평균 탐색 O(1)",
+ "desc": "해시 함수 설계와 적재율, 재해싱을 다룬다.",
+ "order": 22,
+ "claimedBy": null,
+ "studentNo": null,
+ "claimedAt": null,
+ "claimantId": null
+}

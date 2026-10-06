@@ -1,0 +1,13 @@
+{
+ "title": "위상 정렬",
+ "en": "Topological Sort",
+ "cat": "graph",
+ "level": "중급",
+ "bigO": "O(V+E)",
+ "desc": "선수 과목 그래프로 수강 순서를 정하는 문제에 적용한다.",
+ "order": 30,
+ "claimedBy": null,
+ "studentNo": null,
+ "claimedAt": null,
+ "claimantId": null
+}

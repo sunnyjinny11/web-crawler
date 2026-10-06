@@ -1,0 +1,13 @@
+{
+ "title": "이진 탐색 트리",
+ "en": "Binary Search Tree",
+ "cat": "tree",
+ "level": "중급",
+ "bigO": "탐색 O(h)",
+ "desc": "삽입·탐색·삭제를 구현하고 편향 트리의 문제를 확인한다.",
+ "order": 11,
+ "claimedBy": null,
+ "studentNo": null,
+ "claimedAt": null,
+ "claimantId": null
+}

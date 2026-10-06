@@ -1,0 +1,13 @@
+{
+ "title": "개방 주소법",
+ "en": "Open Addressing",
+ "cat": "hash",
+ "level": "중급",
+ "bigO": "평균 탐색 O(1)",
+ "desc": "선형·이차 조사와 이중 해싱을 비교 실험한다.",
+ "order": 24,
+ "claimedBy": null,
+ "studentNo": null,
+ "claimedAt": null,
+ "claimantId": null
+}

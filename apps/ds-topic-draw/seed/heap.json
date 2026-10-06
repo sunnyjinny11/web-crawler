@@ -1,0 +1,13 @@
+{
+ "title": "힙",
+ "en": "Binary Heap",
+ "cat": "tree",
+ "level": "중급",
+ "bigO": "삽입 O(log n)",
+ "desc": "완전 이진 트리 기반 최대·최소 힙과 힙 정렬을 구현한다.",
+ "order": 16,
+ "claimedBy": null,
+ "studentNo": null,
+ "claimedAt": null,
+ "claimantId": null
+}

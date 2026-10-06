@@ -1,0 +1,13 @@
+{
+ "title": "체이닝 충돌 해결",
+ "en": "Separate Chaining",
+ "cat": "hash",
+ "level": "중급",
+ "bigO": "평균 탐색 O(1+α)",
+ "desc": "버킷마다 리스트를 두어 충돌을 해결하고 성능을 측정한다.",
+ "order": 23,
+ "claimedBy": null,
+ "studentNo": null,
+ "claimedAt": null,
+ "claimantId": null
+}

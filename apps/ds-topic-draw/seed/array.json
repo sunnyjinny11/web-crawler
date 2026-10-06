@@ -1,0 +1,13 @@
+{
+ "title": "배열",
+ "en": "Array",
+ "cat": "linear",
+ "level": "기초",
+ "bigO": "접근 O(1)",
+ "desc": "인덱스로 바로 접근하는 연속 메모리 구조. 동적 배열의 확장 전략까지 다룬다.",
+ "order": 1,
+ "claimedBy": null,
+ "studentNo": null,
+ "claimedAt": null,
+ "claimantId": null
+}

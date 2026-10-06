@@ -1,0 +1,13 @@
+{
+ "title": "희소 행렬",
+ "en": "Sparse Matrix",
+ "cat": "linear",
+ "level": "중급",
+ "bigO": "전치 O(t)",
+ "desc": "0이 대부분인 행렬을 삼원소 표현으로 저장하고 전치 연산을 구현한다.",
+ "order": 9,
+ "claimedBy": null,
+ "studentNo": null,
+ "claimedAt": null,
+ "claimantId": null
+}
